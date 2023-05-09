@@ -1,5 +1,44 @@
 import React from 'react';
-import { Box, Link, Typography } from '@mui/material';
+import { Box, createTheme, Link, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, ThemeProvider, Typography } from '@mui/material';
+import { asignarTexto, selectTexto } from '../editor/editorSlice';
+import { procesarTexto, borrarUltimaLinea, agregarLinea } from './salidaSlice'; 
+import { useSelector, useDispatch } from 'react-redux';
+import './MultilineCode.css';
+
+const theme = createTheme({
+  components: {
+    // Name of the component
+    MuiTableCell: {
+      styleOverrides: {
+        // Name of the slot
+        root: {
+          // Some CSS
+          border: '1px solid black',
+        },
+      },
+    },
+    MuiTable:{
+      styleOverrides: {
+        // Name of the slot
+        root: {
+          // Some CSS
+          width: 'auto',
+          maxWidth: '100%',
+        },
+      },
+    },  
+    MuiTableContainer:{
+      styleOverrides: {
+        // Name of the slot
+        root: {
+          // Some CSS
+          marginBottom: '20px',
+        },
+      },
+    },  
+  },
+});
+
 
 
 export function  letraColor(palabra){
@@ -160,6 +199,7 @@ export function textFormat(palabra){
   let moldeItalic = italicMoldeIndPalabra(palabra2);
   let linear = linearPalabra(palabra2);
   let link = linkPalabra(palabra2);
+  let imagen = linkImage(palabra2);
 
   let palabraTotal = [];
   let palabraCompuesta = "";
@@ -167,7 +207,7 @@ export function textFormat(palabra){
   let palabraEspacio = "";
   let palabraEspacioRight = "";
 
-  while(palabra2.length > 2 && (molde[0] != null || italic[0] != null || white[0] != null || moldeItalic[0] != null || linear[0] != null || link[0] != null)){
+  while(palabra2.length > 2 && (molde[0] != null || italic[0] != null || white[0] != null || moldeItalic[0] != null || linear[0] != null || link[0] != null || imagen[0] != null)){
 
     if(molde[0] == null)
       molde[0] = Number.POSITIVE_INFINITY;
@@ -181,9 +221,11 @@ export function textFormat(palabra){
       linear[0] = Number.POSITIVE_INFINITY;
     if(link[0] == null)
       link[0] = Number.POSITIVE_INFINITY;
+    if(imagen[0] == null)
+      imagen[0] = Number.POSITIVE_INFINITY;
 
 
-    if(molde[0] < italic[0] && molde[0] < white[0] && molde[0] < moldeItalic[0] && molde[0] < linear[0] && molde[0] < link[0]){
+    if(molde[0] < italic[0] && molde[0] < white[0] && molde[0] < moldeItalic[0] && molde[0] < linear[0] && molde[0] < link[0] && molde[0] < imagen[0]){
 
       palabraCompuesta = palabra2.slice(0, molde[0]);
       pasaje = palabra2.slice(molde[0] + molde[1].length, );
@@ -199,7 +241,7 @@ export function textFormat(palabra){
       ]; 
 
       palabra2 = pasaje.slice(palabraEspacioRight.length); 
-    } else if(italic[0] < molde[0] && italic[0] < white[0] && italic[0] < moldeItalic[0] && italic[0] < linear[0] && italic[0] < link[0]){
+    } else if(italic[0] < molde[0] && italic[0] < white[0] && italic[0] < moldeItalic[0] && italic[0] < linear[0] && italic[0] < link[0] && italic[0] < imagen[0]){
 
       palabraCompuesta = palabra2.slice(0, italic[0]);
       pasaje = palabra2.slice(italic[0] + italic[1].length, );
@@ -215,7 +257,7 @@ export function textFormat(palabra){
       ]; 
 
       palabra2 = pasaje.slice(palabraEspacioRight.length); 
-    } else if(moldeItalic[0] <= molde[0] && moldeItalic[0] < white[0] && moldeItalic[0] < italic[0] && moldeItalic[0] < linear[0] && moldeItalic[0] < link[0]){
+    } else if(moldeItalic[0] <= molde[0] && moldeItalic[0] < white[0] && moldeItalic[0] < italic[0] && moldeItalic[0] < linear[0] && moldeItalic[0] < link[0] && moldeItalic[0] < imagen[0]){
 
       palabraCompuesta = palabra2.slice(0, moldeItalic[0]);
       pasaje = palabra2.slice(moldeItalic[0] + moldeItalic[1].length, );
@@ -231,7 +273,7 @@ export function textFormat(palabra){
       ]; 
 
       palabra2 = pasaje.slice(palabraEspacioRight.length); 
-    }else if(white[0] < molde[0] && white[0] < italic[0] && white[0] < moldeItalic[0] && white[0] < linear[0] && white[0] < link[0]){
+    }else if(white[0] < molde[0] && white[0] < italic[0] && white[0] < moldeItalic[0] && white[0] < linear[0] && white[0] < link[0] && white[0] < imagen[0]){
 
       palabraCompuesta = palabra2.slice(0, white[0]);
       pasaje = palabra2.slice(white[0] + white[1].length, );
@@ -247,7 +289,7 @@ export function textFormat(palabra){
       ]; 
 
       palabra2 = pasaje.slice(palabraEspacioRight.length); 
-    }else if(linear[0] < molde[0] && linear[0] < italic[0] && linear[0] < moldeItalic[0] && linear[0] < white[0] && linear[0] < link[0]){
+    }else if(linear[0] < molde[0] && linear[0] < italic[0] && linear[0] < moldeItalic[0] && linear[0] < white[0] && linear[0] < link[0] && linear[0] < imagen[0]){
 
       palabraCompuesta = palabra2.slice(0, linear[0]);
       pasaje = palabra2.slice(linear[0] + linear[1].length, );
@@ -263,7 +305,7 @@ export function textFormat(palabra){
       ]; 
 
       palabra2 = pasaje.slice(palabraEspacioRight.length); 
-    }else if(link[0] < molde[0] && link[0] < italic[0] && link[0] < moldeItalic[0] && link[0] < white[0] && link[0] < linear[0]){
+    }else if(link[0] < molde[0] && link[0] < italic[0] && link[0] < moldeItalic[0] && link[0] < white[0] && link[0] < linear[0] && link[0] < imagen[0]){
 
       palabraCompuesta = palabra2.slice(0, link[0]);
       pasaje = palabra2.slice(link[0] + link[1].length, );
@@ -275,6 +317,22 @@ export function textFormat(palabra){
       palabraCompuesta = [palabraCompuesta,
       <Box marginLeft={ palabraEspacio.length}  marginRight={palabraEspacioRight.length} >
       <Link target='_blank' href={link[1].match(/\([A-Za-z0-9 ñÑ,.*_+\-><?'\¡¿}{};:!|#$%&/]+\)/)[0].replace(/\(/, '').replace(/\)/, '')}><Typography color="#d81b60" style={{textDecoration: 'underline', cursor: 'pointer' , fontSize: '100%'}}>{link[1].replace(/\[/g, ' ').replace(/\]/g, ' ').replace(/\([A-Za-z0-9 ñÑ,.*_+\-><?'\¡¿}{};:!|#$%&/]+\)/, ' ')}</Typography></Link>
+      </Box>, pasaje
+      ]; 
+
+      palabra2 = pasaje.slice(palabraEspacioRight.length); 
+    } else if(imagen[0] < molde[0] && imagen[0] < italic[0] && imagen[0] < moldeItalic[0] && imagen[0] < white[0] && imagen[0] < linear[0] && imagen[0] < link[0]){
+
+      palabraCompuesta = palabra2.slice(0, imagen[0]);
+      pasaje = palabra2.slice(imagen[0] + imagen[1].length, );
+
+      palabraEspacio = palabra2.slice(0,imagen[0]);
+      palabraEspacio = palabraEspacio.match(/\s{0,}$/)[0];
+      palabraEspacioRight = pasaje.match(/^\s{0,}/)[0];
+
+      palabraCompuesta = [palabraCompuesta,
+      <Box marginLeft={ palabraEspacio.length}  marginRight={palabraEspacioRight.length} >
+      <img target='_blank' className='imagenText' src={imagen[1].match(/\([A-Za-z0-9 ñÑ,.*_+\-><?'\¡¿}{};:!|#$%&/]+\)/)[0].replace(/\(/, '').replace(/\)/, '')} alt={imagen[1].match(/\[[A-Za-z0-9 ñÑ,.*_+\-><?'\¡¿}{};:!|#$%&/]+\]/)[0].replace(/\[/, '').replace(/\]/, '')}></img>
       </Box>, pasaje
       ]; 
 
@@ -293,6 +351,7 @@ export function textFormat(palabra){
     moldeItalic = italicMoldeIndPalabra(palabra2);
     linear = linearPalabra(palabra2);
     link = linkPalabra(palabra2);
+    imagen = linkImage(palabra2);
 
   }
   if(palabraTotal.length == 0){
@@ -320,7 +379,7 @@ const moldeIndPalabra = (palabra) => {
 
 const italicIndPalabra = (palabra) => {
 
-  let reget = /_[A-Za-z0-9 ñÑ\[\],.*_+\-><?'\¡¿}{};:()!|#$%&/]+_/;
+  let reget = /_[A-Za-z0-9 ñÑ\[\],.*+\-><?'\¡¿}{};:()!|#$%&/]+_/;
   let extraccion = [];
 
   if(reget.test(palabra)){
@@ -397,3 +456,122 @@ const linkPalabra = (palabra) => {
   }
   
 }
+
+const linkImage = (palabra) => {
+
+  let reget = /[!]{1}\[[A-Za-z0-9 ñÑ,.*_+\-><?'\¡¿}{};:()!|#$%&/]+\]\([A-Za-z0-9 ñÑ,.*_+\-><?'\¡¿}{};:!|#$%&/]+\)/;
+  let extraccion = [];
+
+  if(reget.test(palabra)){
+       
+    extraccion =  palabra.match(reget);
+    
+    return [extraccion.index , extraccion[0]];
+  } else {
+    return [null, null];
+  }
+  
+}
+
+export function cuadricula(palabra){
+  return <Box marginBottom={1}><Typography color='red' style={{fontSize: 17}}  display="flex" flexWrap="wrap">{palabra}</Typography></Box>
+}
+
+export function esCuadricula(palabra){
+  
+  if(palabra.match(/\|/) != null){
+    return 1;
+  }else {
+    return 0;
+  }
+}
+
+export function tableCompleta(palabra){
+
+  let palitos = palabra[0].match(/\|/g).length + 1;
+  let presentacion = [];
+  let cabeza = [];
+  let cuerpo = [];
+
+  for(let i = 0; i < palabra.length; i++){
+    if(presentacion.length == 0){
+      presentacion = [palabra[i].split('|')];
+    }else{
+      presentacion.push(palabra[i].split('|'));
+    }
+  }
+
+  for(let i = 0; i < presentacion.length; i++){
+    if(presentacion[i].length < palitos){
+      for(let j = 0; j < palitos - presentacion[i].length; j++){
+        presentacion[i].push('');
+      }
+    }
+  }
+  cabeza = tCabeza(presentacion.slice(0,1), palitos);
+  cuerpo = tbodyCuerpo(presentacion.slice(1,), palitos);
+
+  console.log(cabeza);
+
+  return (
+    <ThemeProvider theme={theme}>
+    <TableContainer>
+      <Table aria-label="simple table">
+      <TableHead >
+        <TableRow >
+         
+             {cabeza}
+            
+         
+        </TableRow>
+      </TableHead>
+      <TableBody >
+         
+            {cuerpo}
+         
+        </TableBody>
+      </Table>
+    </TableContainer>
+    </ThemeProvider>
+  );
+}
+
+const tbodyCuerpo = (palabra, columnas) => {
+ let tableCell = [];
+ let tableRow = [];
+
+  for(let i = 0; i < palabra.length; i++){
+    tableCell = [];
+    for(let j = 0; j < columnas; j++){
+      if(tableCell.length == 0){
+        tableCell = [<TableCell style={{textAlign: 'center'}}>{palabra[i][j]}</TableCell>];
+      }else{
+        tableCell.push(<TableCell style={{textAlign: 'center'}}>{palabra[i][j]}</TableCell>);
+      }
+    }
+    if(tableRow.length == 0){
+      tableRow = [<TableRow>{tableCell}</TableRow>];
+    }else{
+      tableRow.push(<TableRow>{tableCell}</TableRow>);
+    }
+  }
+  return tableRow;
+}
+
+const tCabeza = (palabra, columnas) => {
+  let tableCell = [];
+ let tableRow = [];
+
+  for(let i = 0; i < palabra.length; i++){
+   
+    for(let j = 0; j < columnas; j++){
+      if(tableCell.length == 0){
+        tableCell = [<TableCell style={{fontSize: '18px', fontWeight: 'bold', textAlign: 'center'}}>{palabra[i][j]}</TableCell>];
+      }else{
+        tableCell.push(<TableCell style={{fontSize: '18px', fontWeight: 'bold', textAlign: 'center'}}>{palabra[i][j]}</TableCell>);
+      }
+    }
+   
+  }
+  return tableCell;
+ }

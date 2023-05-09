@@ -7,20 +7,23 @@ import TextareaAutosize from '@mui/base/TextareaAutosize';
 import { border } from '@mui/system';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import ExpandIcon from '@mui/icons-material/Expand';
+import './Editor.css'
 
 import { asignarTexto, selectTexto } from './editorSlice';
 
-export function Editor() {
+export function Editor(props) {
 
   const mensaje = useSelector(selectTexto);
   const dispatch = useDispatch();
 
   const [texto, setTexto] = useState(mensaje);
   
-  
 
   const handleChange = (event) => {
+   
     setTexto(event.target.value);
+    
   }
 
   useEffect(() => {
@@ -31,14 +34,14 @@ export function Editor() {
         <Box display="flex" alignItems="center" justifyContent="center"
         paddingTop={3}
         >
-        <Box width={"79ch"} sx={{
+        <Box width={props.salidaCerrada ? "70%" : "90%"} sx={{
             '& .MuiTextField-root': { m: 1, width: '100ch' },
             }
             }
           
             noValidate
             autoComplete="off">
-          <Box height={45} backgroundColor="#2196f3" width={"100%"}
+          <Box height={ 45 } backgroundColor="#2196f3" width={"100%"}
             sx={{borderTop: "1px solid black",
                             borderRight: "1px solid black",
                             borderLeft: "1px solid black",
@@ -59,17 +62,26 @@ export function Editor() {
               >Editor</Typography>
             </Box>
             <Box>
-                <HighlightOffIcon sx={{cursor: "pointer" ,":hover": {
-                        color: "#e3f2fd", transitionDuration: '0ms'
-                        }}}></HighlightOffIcon>
+            {props.tipoIcon ? 
+              <HighlightOffIcon onClick={ () => props.estadoEditor()} sx={{cursor: "pointer" ,":hover": {
+                          color: "#e3f2fd", transitionDuration: '0ms'
+                          }}}>
+              </HighlightOffIcon> :
+              <ExpandIcon onClick={ () => props.retornarSalida()} sx={{cursor: "pointer" ,":hover": {
+                          color: "#e3f2fd", transitionDuration: '0ms'
+                          }}}>            
+              </ExpandIcon>
+              }
+                
             </Box>
           </Box>
           
             <textarea
-            
+            className={props.salidaCerrada ? 'height-300' : 'height-600'}
              
              value={texto}
-              style={{  width: "100%", minHeight: "300px",
+            
+              style={{  width: "100%",
                resize: "vertical", padding: 0, outline: "none",
                 borderTop: "none", paddingLeft: "5px",
                 paddingTop: "5px", borderColor: "#1d2f2f",
